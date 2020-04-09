@@ -2,22 +2,47 @@ import { repositoryFactory } from "../../repository/repositoryFactory";
 const postRepository = repositoryFactory.get("archive");
 
 const state = {
-  docs: null
+  docs: null,
+  search: "",
 };
 
 const getters = {
-  featuredNews: state => {
-    return state.docs;
+  featuredNews: (state) => {
+    if(state.docs)
+    {
+      return state.docs.filter((doc) => {
+        return (
+          doc.print_section == "A" &&
+          (doc.abstract.toLowerCase().includes(state.search.toLowerCase()) ||
+          doc.lead_paragraph.toLowerCase().includes(state.search.toLowerCase())) 
+        );
+      });
+    }
+
+    return [];
   },
-  latestNews: state => {
-    return state.docs;
-  }
+  latestNews: (state) => {
+    if(state.docs)
+    {
+      return state.docs.filter((doc) => {
+        return (
+          doc.print_section != "A" &&
+          doc.abstract.toLowerCase().includes(state.search.toLowerCase()) ||
+          doc.lead_paragraph.toLowerCase().includes(state.search.toLowerCase())
+        );
+      });
+    }
+
+    return [];
+  },
 };
 
 const mutations = {
   updateDocs: (state, docs) => {
-    console.log(docs[0]);
     state.docs = docs;
+  },
+  updateSearch: (state, term) => {
+    state.search = term;
   }
 };
 
@@ -25,9 +50,12 @@ const actions = {
   async getArchive(context, payload) {
     let { data, status } = await postRepository.getArchive(payload);
     if (status == 200) {
-     context.commit("updateDocs", data.response.docs);
+      context.commit("updateDocs", data.response.docs);
     }
   },
+  addSearch(context, payload) {
+    context.commit("updateSearch", payload.term);
+  }
 };
 
 export default {
@@ -35,5 +63,5 @@ export default {
   state,
   getters,
   actions,
-  mutations
+  mutations,
 };

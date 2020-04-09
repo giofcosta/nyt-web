@@ -1,36 +1,42 @@
 <template>
   <div id="app">
-    <TopBar title="The NYT News" />
-    <div v-for="article in featuredNews" :key="article._id">{{article._id}}</div>
+    <TopBar title="The NYT News" :onSearch="search" />
+    <NewsSection title="Featured News" :items="featuredNews" />
+    <NewsSection title="Latest News" :items="latestNews" />
   </div>
 </template>
 
 <script>
 import TopBar from "./components/TopBar.vue";
+import NewsSection from "./components/NewsSection";
 import { mapGetters, mapActions } from "vuex";
 
 export default {
   name: "App",
   components: {
-    TopBar
+    TopBar,
+    NewsSection
   },
   created() {
     this.getData();
   },
   computed: {
-    //...mapState(),
     ...mapGetters("archive", ["featuredNews", "latestNews"])
   },
   methods: {
     ...mapActions("archive", ["getArchive"]),
     getData() {
-      this.getArchive({year: 2020, month: 4});
+      this.getArchive({ year: 2020, month: 4 });
+    },
+    search(term){
+      console.log(term)
+      this.$store.dispatch('archive/addSearch', {term})
     }
   }
 };
 </script>
 
-<style>
+<style lang="scss">
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -46,4 +52,6 @@ html {
   margin: 0;
   padding: 0;
 }
+
+
 </style>
